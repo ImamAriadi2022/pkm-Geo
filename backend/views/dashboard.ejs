@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <a href="/report">Buat Laporan</a>
+    <h2>Laporan Anda:</h2>
+    <ul>
+        <% reports.forEach((report) => { %>
+            <li>
+                <p><strong>Deskripsi:</strong> <%= report.description %></p>
+                <p><strong>Lokasi:</strong> <%= report.location %></p>
+                <% if (report.photo) { %>
+                    <p><strong>Foto:</strong> <img src="/uploads/<%= report.photo %>" alt="Foto laporan" width="100"></p>
+                <% } %>
+                <p><strong>Status:</strong> <%= report.status %></p>
+            </li>
+        <% }); %>
+    </ul>
+</body>
+</html>
