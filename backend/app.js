@@ -49,7 +49,8 @@ app.post('/login', (req, res) => {
 
 // Dashboard untuk Pegawai/Pelapor
 app.get('/dashboard', (req, res) => {
-    res.render('dashboard', { reports: readReports() });
+    const reports = readReports().filter((report) => report.status === 'completed');
+    res.render('dashboard', { reports });
 });
 
 // Form Laporan

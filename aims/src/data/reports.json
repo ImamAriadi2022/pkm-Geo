@@ -1,0 +1,19 @@
+[
+    {
+      "id": 1,
+      "description": "Oil leakage detected in pipe A1.",
+      "location": "Plant A",
+      "timestamp": "2024-11-19T08:30:00Z",
+      "category": null,
+      "status": null
+    },
+    {
+      "id": 2,
+      "description": "Strange noise heard from compressor B.",
+      "location": "Plant B",
+      "timestamp": "2024-11-19T10:15:00Z",
+      "category": null,
+      "status": null
+    }
+  ]
+  

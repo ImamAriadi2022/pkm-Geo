@@ -1,0 +1,15 @@
+[
+    {
+      "id": 1,
+      "title": "Maintenance Alert",
+      "content": "Regular maintenance scheduled for Plant A on 2024-11-20.",
+      "date": "2024-11-18"
+    },
+    {
+      "id": 2,
+      "title": "Safety Update",
+      "content": "All employees are required to wear PPE in Plant B.",
+      "date": "2024-11-17"
+    }
+  ]
+  

@@ -1,0 +1,14 @@
+{
+    "assets": [
+      { "id": 1, "name": "Compressor A", "status": "Normal", "risk": "Low" },
+      { "id": 2, "name": "Pump B", "status": "Warning", "risk": "Medium" },
+      { "id": 3, "name": "Valve C", "status": "Critical", "risk": "High" }
+    ],
+    "incidents": [],
+    "recommendations": [
+      { "id": 1, "asset": "Compressor A", "action": "Inspect for wear and tear" },
+      { "id": 2, "asset": "Pump B", "action": "Replace faulty parts immediately" },
+      { "id": 3, "asset": "Valve C", "action": "Schedule urgent maintenance" }
+    ]
+  }
+  
