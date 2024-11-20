@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Container } from 'react-bootstrap';
+import { Container, Form, Button } from 'react-bootstrap';
 
 const ReportForm = ({ onSubmitReport }) => {
   const [report, setReport] = useState({
@@ -93,7 +93,7 @@ const ReportForm = ({ onSubmitReport }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!report.name || !report.description || !report.timestamp) {
@@ -101,55 +101,53 @@ const ReportForm = ({ onSubmitReport }) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('description', report.description);
-    formData.append('pegawaiName', report.name);
-    formData.append('fotoLaporan', report.photo);
-    formData.append('pegawaiDate', report.timestamp);
-    formData.append('location', report.location);
+    // Simpan laporan sementara di localStorage
+    const pendingReports = JSON.parse(localStorage.getItem('pendingReports')) || [];
+    pendingReports.push(report);
+    localStorage.setItem('pendingReports', JSON.stringify(pendingReports));
 
-    try {
-      const response = await fetch('https://back-fix-laps.vercel.app/api/upload-and-save', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        alert('Laporan berhasil dikirim!');
-      } else {
-        const errorData = await response.json();
-        console.error('Error:', errorData);
-        alert(`Gagal mengirim laporan: ${errorData.message}`);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Terjadi kesalahan saat mengirim laporan.');
+    alert('Laporan berhasil disimpan dan menunggu persetujuan admin!');
+    if (onSubmitReport) {
+      onSubmitReport(report);
     }
   };
 
   return (
-    <Container>
+    <Container className="mt-5">
+      <h1>Formulir Laporan</h1>
       <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3" controlId="name">
+        <Form.Group className="mb-3">
           <Form.Label>Nama Pelapor</Form.Label>
           <Form.Control
             type="text"
+            placeholder="Masukkan nama"
+            name="name"
             value={report.name}
             onChange={(e) => setReport({ ...report, name: e.target.value })}
             required
           />
         </Form.Group>
-
-        <Form.Group className="mb-3" controlId="description">
-          <Form.Label>Judul Laporan</Form.Label>
+        <Form.Group className="mb-3">
+          <Form.Label>Deskripsi Laporan</Form.Label>
           <Form.Control
             type="text"
+            placeholder="Masukkan deskripsi"
+            name="description"
             value={report.description}
             onChange={(e) => setReport({ ...report, description: e.target.value })}
             required
           />
         </Form.Group>
-
+        <Form.Group className="mb-3">
+          <Form.Label>Lokasi Terkini</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Lokasi"
+            name="location"
+            value={report.location}
+            readOnly
+          />
+        </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Unggah Foto</Form.Label>
           <Form.Control
@@ -160,7 +158,6 @@ const ReportForm = ({ onSubmitReport }) => {
             Gunakan Kamera
           </Button>
         </Form.Group>
-
         {isCameraOpen && (
           <div className="camera-container mt-3">
             <video
@@ -184,9 +181,8 @@ const ReportForm = ({ onSubmitReport }) => {
             </Button>
           </div>
         )}
-
         <Button variant="primary" type="submit">
-          Submit Report
+          Kirim Laporan
         </Button>
       </Form>
     </Container>

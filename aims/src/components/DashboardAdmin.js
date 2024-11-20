@@ -1,23 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { Container, Table, Button } from "react-bootstrap";
-import AnalyzeReport from "./AnalyzeReport";
-import reportData from "../data/reports.json";
+import supabase from './supabaseClient'; // Pastikan path ini sesuai dengan lokasi file supabaseClient.js
 
 const DashboardAdmin = () => {
-  const [reports, setReports] = useState([]);
+  const [pendingReports, setPendingReports] = useState([]);
 
   useEffect(() => {
-    // Load laporan dari data JSON
-    setReports(reportData);
+    // Load laporan yang belum di-approve dari localStorage
+    const reports = JSON.parse(localStorage.getItem('pendingReports')) || [];
+    setPendingReports(reports);
   }, []);
 
-  const handleAnalyze = (reportId) => {
-    const updatedReports = reports.map((report) =>
-      report.id === reportId
-        ? { ...report, status: "Analyzed", category: "High Risk" } // Simulasi AI
-        : report
-    );
-    setReports(updatedReports);
+  const handleApprove = async (report) => {
+    const { error } = await supabase
+      .from('reports')
+      .insert([report]);
+
+    if (error) {
+      console.error('Error inserting report:', error);
+      alert('Terjadi kesalahan saat mengirim laporan.');
+    } else {
+      alert('Laporan berhasil dikirim ke Supabase!');
+      // Hapus laporan dari pendingReports
+      const updatedReports = pendingReports.filter(r => r !== report);
+      setPendingReports(updatedReports);
+      localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
+    }
+  };
+
+  const handleReject = (report) => {
+    // Hapus laporan dari pendingReports
+    const updatedReports = pendingReports.filter(r => r !== report);
+    setPendingReports(updatedReports);
+    localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
+    alert('Laporan ditolak.');
   };
 
   return (
@@ -26,30 +42,26 @@ const DashboardAdmin = () => {
       <Table striped bordered hover className="mt-4">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Description</th>
-            <th>Location</th>
+            <th>Nama</th>
+            <th>Deskripsi</th>
+            <th>Lokasi</th>
             <th>Timestamp</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
-          {reports.map((report) => (
-            <tr key={report.id}>
-              <td>{report.id}</td>
+          {pendingReports.map((report, index) => (
+            <tr key={index}>
+              <td>{report.name}</td>
               <td>{report.description}</td>
               <td>{report.location}</td>
               <td>{report.timestamp}</td>
-              <td>{report.category || "Pending"}</td>
-              <td>{report.status || "Pending"}</td>
               <td>
-                <Button
-                  variant="success"
-                  onClick={() => handleAnalyze(report.id)}
-                >
-                  Analyze
+                <Button variant="success" onClick={() => handleApprove(report)}>
+                  Approve
+                </Button>
+                <Button variant="danger" className="ms-2" onClick={() => handleReject(report)}>
+                  Reject
                 </Button>
               </td>
             </tr>

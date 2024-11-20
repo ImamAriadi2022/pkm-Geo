@@ -27,6 +27,9 @@ const Navigation = ({ userType }) => {
                 <LinkContainer to="/dashboard">
                   <Nav.Link>Dashboard</Nav.Link>
                 </LinkContainer>
+                <LinkContainer to="/report">
+                  <Nav.Link>Laporkan</Nav.Link>
+                </LinkContainer>
                 <LinkContainer to="/settings">
                   <Nav.Link>Settings</Nav.Link>
                 </LinkContainer>
