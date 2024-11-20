@@ -3,10 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Navigation from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
 import Login from "./components/Login";
+import Signup from "./components/Signup";
 import DashboardPegawai from "./components/DashboardPegawai";
 import ReportForm from "./components/ReportForm";
 import DashboardAdmin from "./components/DashboardAdmin";
 import News from "./components/News";
+import AdminSettings from "./components/AdminSettings";
+import Logout from "./components/Logout";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ProtectedRoute = ({ userType, allowedRoles, children }) => {
@@ -26,6 +29,7 @@ const App = () => {
         {/* Routes for guest */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login setUserType={setUserType} />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/about" element={<div>About Us Page</div>} />
         <Route path="/contact" element={<div>Contact Us Page</div>} />
 
@@ -63,6 +67,18 @@ const App = () => {
               <DashboardAdmin />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/admin-settings"
+          element={
+            <ProtectedRoute userType={userType} allowedRoles={["admin"]}>
+              <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/logout"
+          element={<Logout setUserType={setUserType} />}
         />
 
         {/* Fallback route */}

@@ -1,26 +1,39 @@
 import React, { useState } from "react";
-import { Button, Container, Form } from "react-bootstrap";
+import { Container, Form, Button, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const Login = ({ setUserType }) => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCredentials({ ...credentials, [name]: value });
+    setCredentials((prevCredentials) => ({
+      ...prevCredentials,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simulasi login
-    if (credentials.email === "admin@example.com") {
+    const { email, password } = credentials;
+
+    if (email === "admin@example.com" && password === "admin") {
       setUserType("admin");
       navigate("/admin-dashboard");
-    } else {
+    } else if (email === "user@example.com" && password === "user") {
       setUserType("pegawai");
       navigate("/dashboard");
+    } else {
+      alert("Invalid email or password");
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -39,13 +52,18 @@ const Login = ({ setUserType }) => {
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Password"
-            name="password"
-            onChange={handleChange}
-            required
-          />
+          <InputGroup>
+            <Form.Control
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter password"
+              name="password"
+              onChange={handleChange}
+              required
+            />
+            <Button variant="outline-secondary" onClick={togglePasswordVisibility}>
+              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            </Button>
+          </InputGroup>
         </Form.Group>
         <Button variant="primary" type="submit">
           Login
