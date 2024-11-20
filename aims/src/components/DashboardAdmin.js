@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Button } from "react-bootstrap";
-import supabase from './supabaseClient'; // Pastikan path ini sesuai dengan lokasi file supabaseClient.js
+import { Container, Table, Button, Modal } from "react-bootstrap";
+import AnalyzeReport from "./AnalyzeReport";
 
 const DashboardAdmin = () => {
   const [pendingReports, setPendingReports] = useState([]);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState('');
 
   useEffect(() => {
     // Load laporan yang belum di-approve dari localStorage
@@ -11,21 +14,23 @@ const DashboardAdmin = () => {
     setPendingReports(reports);
   }, []);
 
-  const handleApprove = async (report) => {
-    const { error } = await supabase
-      .from('reports')
-      .insert([report]);
+  const handleApprove = (report) => {
+    // Tambahkan hasil analisis ke laporan
+    const analyzedReport = { ...report, analysis: analysisResult };
 
-    if (error) {
-      console.error('Error inserting report:', error);
-      alert('Terjadi kesalahan saat mengirim laporan.');
-    } else {
-      alert('Laporan berhasil dikirim ke Supabase!');
-      // Hapus laporan dari pendingReports
-      const updatedReports = pendingReports.filter(r => r !== report);
-      setPendingReports(updatedReports);
-      localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
-    }
+    // Simpan laporan yang di-approve di localStorage
+    const approvedReports = JSON.parse(localStorage.getItem('approvedReports')) || [];
+    approvedReports.push(analyzedReport);
+    localStorage.setItem('approvedReports', JSON.stringify(approvedReports));
+
+    // Hapus laporan dari pendingReports
+    const updatedReports = pendingReports.filter(r => r !== report);
+    setPendingReports(updatedReports);
+    localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
+
+    alert('Laporan berhasil disetujui!');
+    setShowModal(false);
+    setSelectedReport(null);
   };
 
   const handleReject = (report) => {
@@ -34,6 +39,20 @@ const DashboardAdmin = () => {
     setPendingReports(updatedReports);
     localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
     alert('Laporan ditolak.');
+  };
+
+  const handleAnalyze = (report) => {
+    setSelectedReport(report);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedReport(null);
+  };
+
+  const handleAnalysisResult = (result) => {
+    setAnalysisResult(result);
   };
 
   return (
@@ -57,7 +76,10 @@ const DashboardAdmin = () => {
               <td>{report.location}</td>
               <td>{report.timestamp}</td>
               <td>
-                <Button variant="success" onClick={() => handleApprove(report)}>
+                <Button variant="info" onClick={() => handleAnalyze(report)}>
+                  Analyze
+                </Button>
+                <Button variant="success" className="ms-2" onClick={() => handleApprove(report)}>
                   Approve
                 </Button>
                 <Button variant="danger" className="ms-2" onClick={() => handleReject(report)}>
@@ -68,6 +90,20 @@ const DashboardAdmin = () => {
           ))}
         </tbody>
       </Table>
+
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Report Analysis</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedReport && <AnalyzeReport report={selectedReport} onAnalysisResult={handleAnalysisResult} />}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
