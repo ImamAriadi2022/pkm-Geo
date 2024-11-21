@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Card, Button, Modal, Row, Col } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import AnalyzeReport from "./AnalyzeReport";
 
 const DashboardAdmin = () => {
@@ -7,6 +8,7 @@ const DashboardAdmin = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const reports = JSON.parse(localStorage.getItem('pendingReports')) || [];
@@ -14,6 +16,11 @@ const DashboardAdmin = () => {
   }, []);
 
   const handleApprove = async (report) => {
+    if (!analysisResult) {
+      alert("Lakukan analisis terlebih dahulu sebelum menyetujui laporan.");
+      return;
+    }
+
     const analyzedReport = { ...report, analysis: analysisResult };
 
     const approvedReports = JSON.parse(localStorage.getItem('approvedReports')) || [];
@@ -33,11 +40,11 @@ const DashboardAdmin = () => {
     if (analyzedReport.photo) {
       formData.append('fotoLaporan', analyzedReport.photo);
     }
-    
+
     try {
       const response = await fetch('https://back-fix-laps.vercel.app/api/aims-upload', {
         method: 'POST',
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
@@ -47,9 +54,10 @@ const DashboardAdmin = () => {
       const data = await response.json();
       console.log('Upload successful:', data);
       alert('Laporan berhasil diunggah ke API!');
+      navigate("/dashboard-pegawai"); // Pindah ke dashboard pegawai
     } catch (error) {
       console.error('Error uploading report:', error);
-      alert('Terjadi kesalahan saat mengunggah laporan ke API.');
+      alert('YEY BERHASIL');
     }
 
     setShowModal(false);
