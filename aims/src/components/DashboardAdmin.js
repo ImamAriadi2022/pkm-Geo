@@ -25,16 +25,15 @@ const DashboardAdmin = () => {
     localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
 
     const formData = new FormData();
-    formData.append('pegawaiName', analyzedReport.name); // harus persis sama dengan backend
+    formData.append('pegawaiName', analyzedReport.name);
     formData.append('description', analyzedReport.description);
     formData.append('statusLaporan', analyzedReport.analysis);
     formData.append('pegawaiDate', analyzedReport.timestamp);
     formData.append('location', analyzedReport.location);
     if (analyzedReport.photo) {
-      formData.append('fotoLaporan', analyzedReport.photo); // pastikan ini file
+      formData.append('fotoLaporan', analyzedReport.photo);
     }
     
-
     try {
       const response = await fetch('https://back-fix-laps.vercel.app/api/aims-upload', {
         method: 'POST',
@@ -85,7 +84,11 @@ const DashboardAdmin = () => {
         {pendingReports.map((report, index) => (
           <Col md={4} key={index} className="mb-4">
             <Card>
-              <Card.Img variant="top" src={`http://localhost:3001${report.photo}`} alt="Report" />
+              <Card.Img 
+                variant="top" 
+                src={report.photo ? `https://pkm-geo.vercel.app/${report.photo}` : "https://via.placeholder.com/150"} 
+                alt="Report"
+              />
               <Card.Body>
                 <Card.Title>{report.name}</Card.Title>
                 <Card.Text>

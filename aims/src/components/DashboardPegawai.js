@@ -18,7 +18,12 @@ const DashboardPegawai = () => {
         {approvedReports.map((report, index) => (
           <Col md={4} key={index} className="mb-4">
             <Card>
-              <Card.Img variant="top" src={`http://localhost:3001${report.photo}`} alt="Report" />
+              {/* Menambahkan fallback URL jika gambar tidak ditemukan */}
+              <Card.Img 
+                variant="top" 
+                src={report.photo ? `https://pkm-geo.vercel.app/${report.photo}` : "https://via.placeholder.com/150"} 
+                alt="Report"
+              />
               <Card.Body>
                 <Card.Title>{report.name}</Card.Title>
                 <Card.Text>

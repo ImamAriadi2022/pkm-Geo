@@ -83,15 +83,18 @@ const ReportForm = ({ onSubmitReport }) => {
     const context = canvas.getContext("2d");
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob((blob) => {
-      setReport((prevReport) => ({
-        ...prevReport,
-        photo: blob,
-      }));
-      setIsCameraOpen(false);
+    const base64Image = canvas.toDataURL("image/jpeg");
+    console.log("Captured base64 image from camera:", base64Image); // Log base64 image
+    setReport((prevReport) => ({
+      ...prevReport,
+      photo: base64Image,
+    }));
+
+    setIsCameraOpen(false);
+    if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
-      setCameraStream(null);
-    });
+    }
+    setCameraStream(null);
   };
 
   // Toggle camera mode (front/back)
@@ -111,6 +114,25 @@ const ReportForm = ({ onSubmitReport }) => {
     }
   };
 
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      console.log("Base64 image from file upload:", reader.result); // Log base64 image
+      setReport((prevReport) => ({
+        ...prevReport,
+        photo: reader.result, // Menyimpan base64 image
+      }));
+    };
+    if (file) {
+      console.log("File selected:", file); // Log file info
+      reader.readAsDataURL(file);
+    } else {
+      console.log("No file selected.");
+    }
+  };
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -120,10 +142,15 @@ const ReportForm = ({ onSubmitReport }) => {
       return;
     }
 
+    // Log the report data before saving
+    console.log("Report data before saving:", report);
+
     // Save report to localStorage
     const pendingReports = JSON.parse(localStorage.getItem("pendingReports")) || [];
     pendingReports.push(report);
     localStorage.setItem("pendingReports", JSON.stringify(pendingReports));
+
+    console.log("Saved reports to localStorage:", pendingReports); // Log data saved in localStorage
 
     alert("Laporan berhasil disimpan!");
     if (onSubmitReport) {
@@ -172,13 +199,7 @@ const ReportForm = ({ onSubmitReport }) => {
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label htmlFor="reportPhoto">Unggah Foto</Form.Label>
-          <Form.Control
-            id="reportPhoto"
-            type="file"
-            onChange={(e) =>
-              setReport({ ...report, photo: e.target.files[0] })
-            }
-          />
+          <Form.Control id="reportPhoto" type="file" onChange={handleFileUpload} />
           <Button variant="primary" className="mt-2" onClick={openCamera}>
             Gunakan Kamera
           </Button>
