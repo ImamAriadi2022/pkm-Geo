@@ -75,24 +75,51 @@ const ReportForm = ({ onSubmitReport }) => {
   const captureImage = () => {
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+  
+    // Tentukan skala untuk membatasi ukuran file
+    const maxWidth = 800; // Atur resolusi maksimum
+    const maxHeight = 800;
+    let width = video.videoWidth;
+    let height = video.videoHeight;
+  
+    // Skalakan dimensi jika melebihi batas
+    if (width > maxWidth || height > maxHeight) {
+      const aspectRatio = width / height;
+      if (width > height) {
+        width = maxWidth;
+        height = maxWidth / aspectRatio;
+      } else {
+        height = maxHeight;
+        width = maxHeight * aspectRatio;
+      }
+    }
+  
+    canvas.width = width;
+    canvas.height = height;
     const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const base64Image = canvas.toDataURL("image/jpeg");
-    console.log("Captured base64 image:", base64Image); // Log base64 image
+    context.drawImage(video, 0, 0, width, height);
+  
+    // Konversi ke JPEG dan cek ukuran
+    let base64Image = canvas.toDataURL("image/jpeg", 0.7); // Atur kualitas JPEG
+  
+    // Ulangi proses dengan kualitas lebih rendah jika ukuran melebihi 200KB
+    while (base64Image.length > 200 * 1024) {
+      base64Image = canvas.toDataURL("image/jpeg", 0.5); // Turunkan kualitas
+    }
+  
+    console.log("Captured base64 image:", base64Image);
     setReport((prevReport) => ({
       ...prevReport,
       photo: base64Image,
     }));
-
+  
     setIsCameraOpen(false);
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
     }
     setCameraStream(null);
   };
+  
 
   const toggleCameraMode = async () => {
     setCameraMode((prevMode) => (prevMode === "user" ? "environment" : "user"));

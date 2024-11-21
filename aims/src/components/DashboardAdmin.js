@@ -5,14 +5,19 @@ import AnalyzeReport from "./AnalyzeReport";
 
 const DashboardAdmin = () => {
   const [pendingReports, setPendingReports] = useState([]);
+  const [approvedReports, setApprovedReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Load pending and approved reports from localStorage
     const reports = JSON.parse(localStorage.getItem('pendingReports')) || [];
     setPendingReports(reports);
+
+    const approved = JSON.parse(localStorage.getItem('approvedReports')) || [];
+    setApprovedReports(approved);
   }, []);
 
   const handleApprove = async (report) => {
@@ -23,43 +28,17 @@ const DashboardAdmin = () => {
 
     const analyzedReport = { ...report, analysis: analysisResult };
 
-    const approvedReports = JSON.parse(localStorage.getItem('approvedReports')) || [];
-    approvedReports.push(analyzedReport);
-    localStorage.setItem('approvedReports', JSON.stringify(approvedReports));
+    // Update approved reports
+    const updatedApprovedReports = [...approvedReports, analyzedReport];
+    setApprovedReports(updatedApprovedReports);
+    localStorage.setItem('approvedReports', JSON.stringify(updatedApprovedReports));
 
-    const updatedReports = pendingReports.filter(r => r !== report);
-    setPendingReports(updatedReports);
-    localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
+    // Remove from pending reports
+    const updatedPendingReports = pendingReports.filter(r => r !== report);
+    setPendingReports(updatedPendingReports);
+    localStorage.setItem('pendingReports', JSON.stringify(updatedPendingReports));
 
-    const formData = new FormData();
-    formData.append('pegawaiName', analyzedReport.name);
-    formData.append('description', analyzedReport.description);
-    formData.append('statusLaporan', analyzedReport.analysis);
-    formData.append('pegawaiDate', analyzedReport.timestamp);
-    formData.append('location', analyzedReport.location);
-    if (analyzedReport.photo) {
-      formData.append('fotoLaporan', analyzedReport.photo);
-    }
-
-    try {
-      const response = await fetch('https://back-fix-laps.vercel.app/api/aims-upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      console.log('Upload successful:', data);
-      alert('Laporan berhasil diunggah ke API!');
-      navigate("/dashboard-pegawai"); // Pindah ke dashboard pegawai
-    } catch (error) {
-      console.error('Error uploading report:', error);
-      alert('YEY BERHASIL');
-    }
-
+    alert("Laporan berhasil di-approve!");
     setShowModal(false);
     setSelectedReport(null);
   };
@@ -69,6 +48,13 @@ const DashboardAdmin = () => {
     setPendingReports(updatedReports);
     localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
     alert('Laporan ditolak.');
+  };
+
+  const handleDeleteApproved = (report) => {
+    const updatedApprovedReports = approvedReports.filter(r => r !== report);
+    setApprovedReports(updatedApprovedReports);
+    localStorage.setItem('approvedReports', JSON.stringify(updatedApprovedReports));
+    alert('Laporan berhasil dihapus.');
   };
 
   const handleAnalyze = (report) => {
@@ -88,26 +74,22 @@ const DashboardAdmin = () => {
   return (
     <Container className="mt-5">
       <h1>Admin Dashboard</h1>
+      
+      <h2>Laporan Pending</h2>
       <Row>
         {pendingReports.map((report, index) => (
           <Col md={4} key={index} className="mb-4">
             <Card>
-              <Card.Img 
-                variant="top" 
+              <Card.Img
+                variant="top"
                 src={report.photo || "https://via.placeholder.com/150"}
                 alt="Report"
               />
               <Card.Body>
                 <Card.Title>{report.name}</Card.Title>
-                <Card.Text>
-                  <strong>Deskripsi:</strong> {report.description}
-                </Card.Text>
-                <Card.Text>
-                  <strong>Lokasi:</strong> {report.location}
-                </Card.Text>
-                <Card.Text>
-                  <strong>Timestamp:</strong> {report.timestamp}
-                </Card.Text>
+                <Card.Text><strong>Deskripsi:</strong> {report.description}</Card.Text>
+                <Card.Text><strong>Lokasi:</strong> {report.location}</Card.Text>
+                <Card.Text><strong>Timestamp:</strong> {report.timestamp}</Card.Text>
                 <Button variant="info" onClick={() => handleAnalyze(report)}>
                   Analyze
                 </Button>
@@ -116,6 +98,33 @@ const DashboardAdmin = () => {
                 </Button>
                 <Button variant="danger" className="ms-2" onClick={() => handleReject(report)}>
                   Reject
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <h2>Laporan yang Di-Approve</h2>
+      <Row>
+        {approvedReports.map((report, index) => (
+          <Col md={4} key={index} className="mb-4">
+            <Card>
+              <Card.Img
+                variant="top"
+                src={report.photo || "https://via.placeholder.com/150"}
+                alt="Report"
+              />
+              <Card.Body>
+                <Card.Title>{report.name}</Card.Title>
+                <Card.Text><strong>Deskripsi:</strong> {report.description}</Card.Text>
+                <Card.Text><strong>Lokasi:</strong> {report.location}</Card.Text>
+                <Card.Text><strong>Timestamp:</strong> {report.timestamp}</Card.Text>
+                <Button
+                  variant="danger"
+                  onClick={() => handleDeleteApproved(report)}
+                >
+                  Hapus
                 </Button>
               </Card.Body>
             </Card>
