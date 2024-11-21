@@ -9,34 +9,29 @@ const DashboardAdmin = () => {
   const [analysisResult, setAnalysisResult] = useState('');
 
   useEffect(() => {
-    // Load laporan yang belum di-approve dari localStorage
     const reports = JSON.parse(localStorage.getItem('pendingReports')) || [];
     setPendingReports(reports);
   }, []);
 
   const handleApprove = async (report) => {
-    // Tambahkan hasil analisis ke laporan
     const analyzedReport = { ...report, analysis: analysisResult };
 
-    // Simpan laporan yang di-approve di localStorage
     const approvedReports = JSON.parse(localStorage.getItem('approvedReports')) || [];
     approvedReports.push(analyzedReport);
     localStorage.setItem('approvedReports', JSON.stringify(approvedReports));
 
-    // Hapus laporan dari pendingReports
     const updatedReports = pendingReports.filter(r => r !== report);
     setPendingReports(updatedReports);
     localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
 
-    // Upload laporan ke API
     const formData = new FormData();
-    formData.append('name', analyzedReport.name);
+    formData.append('pegawaiName', analyzedReport.name);
     formData.append('description', analyzedReport.description);
     formData.append('location', analyzedReport.location);
-    formData.append('timestamp', analyzedReport.timestamp);
-    formData.append('analysis', analyzedReport.analysis);
+    formData.append('pegawaiDate', analyzedReport.timestamp);
+    formData.append('statusLaporan', analyzedReport.analysis);
     if (analyzedReport.photo) {
-      formData.append('photo', analyzedReport.photo);
+      formData.append('fotoLaporan', analyzedReport.photo);
     }
 
     try {
@@ -62,7 +57,6 @@ const DashboardAdmin = () => {
   };
 
   const handleReject = (report) => {
-    // Hapus laporan dari pendingReports
     const updatedReports = pendingReports.filter(r => r !== report);
     setPendingReports(updatedReports);
     localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
@@ -127,6 +121,9 @@ const DashboardAdmin = () => {
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
             Close
+          </Button>
+          <Button variant="primary" onClick={() => handleApprove(selectedReport)}>
+            Approve Report
           </Button>
         </Modal.Footer>
       </Modal>
