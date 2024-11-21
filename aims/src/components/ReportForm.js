@@ -1,34 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Form, Button } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from "react";
+import { Container, Form, Button } from "react-bootstrap";
 
 const ReportForm = ({ onSubmitReport }) => {
   const [report, setReport] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     photo: null,
-    location: '',
-    timestamp: ''
+    location: "",
+    timestamp: "",
   });
+
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
-  const [cameraMode, setCameraMode] = useState('user');
+  const [cameraMode, setCameraMode] = useState("user");
 
+  const videoRef = useRef(null);
+
+  // Fetch geolocation and timestamp on load
   useEffect(() => {
     const getLocation = () => {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-          const { latitude, longitude } = position.coords;
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
-            .then((response) => response.json())
-            .then((data) => {
-              const { village, town, county, state, country } = data.address;
-              setReport((prevReport) => ({
-                ...prevReport,
-                location: `${village || town || ''}, ${county}, ${state}, ${country}`
-              }));
-            })
-            .catch((error) => console.error('Error fetching location:', error));
-        });
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                const { village, town, county, state, country } = data.address;
+                setReport((prevReport) => ({
+                  ...prevReport,
+                  location: `${village || town || ""}, ${county}, ${state}, ${country}`,
+                }));
+              })
+              .catch((error) =>
+                console.error("Error fetching location:", error)
+              );
+          },
+          (error) => alert("Gagal mendapatkan lokasi. Periksa izin browser Anda.")
+        );
       } else {
         alert("Geolocation tidak didukung oleh browser ini.");
       }
@@ -37,10 +48,11 @@ const ReportForm = ({ onSubmitReport }) => {
     getLocation();
     setReport((prevReport) => ({
       ...prevReport,
-      timestamp: new Date().toLocaleString()
+      timestamp: new Date().toLocaleString(),
     }));
   }, []);
 
+  // Handle camera opening
   const openCamera = async () => {
     try {
       if (cameraStream) {
@@ -53,14 +65,18 @@ const ReportForm = ({ onSubmitReport }) => {
 
       setCameraStream(stream);
       setIsCameraOpen(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
     } catch (error) {
       console.error("Error accessing camera:", error);
       alert("Tidak dapat mengakses kamera.");
     }
   };
 
+  // Capture image from video feed
   const captureImage = () => {
-    const video = document.getElementById("cameraFeed");
+    const video = videoRef.current;
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -70,7 +86,7 @@ const ReportForm = ({ onSubmitReport }) => {
     canvas.toBlob((blob) => {
       setReport((prevReport) => ({
         ...prevReport,
-        photo: blob
+        photo: blob,
       }));
       setIsCameraOpen(false);
       cameraStream.getTracks().forEach((track) => track.stop());
@@ -78,6 +94,7 @@ const ReportForm = ({ onSubmitReport }) => {
     });
   };
 
+  // Toggle camera mode (front/back)
   const toggleCameraMode = async () => {
     setCameraMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
     if (isCameraOpen) {
@@ -85,6 +102,7 @@ const ReportForm = ({ onSubmitReport }) => {
     }
   };
 
+  // Close camera
   const closeCamera = () => {
     setIsCameraOpen(false);
     if (cameraStream) {
@@ -93,20 +111,21 @@ const ReportForm = ({ onSubmitReport }) => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!report.name || !report.description || !report.timestamp) {
-      alert("Nama pelapor, judul laporan, dan waktu harus diisi.");
+      alert("Nama pelapor, deskripsi, dan waktu harus diisi.");
       return;
     }
 
-    // Simpan laporan sementara di localStorage
-    const pendingReports = JSON.parse(localStorage.getItem('pendingReports')) || [];
+    // Save report to localStorage
+    const pendingReports = JSON.parse(localStorage.getItem("pendingReports")) || [];
     pendingReports.push(report);
-    localStorage.setItem('pendingReports', JSON.stringify(pendingReports));
+    localStorage.setItem("pendingReports", JSON.stringify(pendingReports));
 
-    alert('Laporan berhasil disimpan dan menunggu persetujuan admin!');
+    alert("Laporan berhasil disimpan!");
     if (onSubmitReport) {
       onSubmitReport(report);
     }
@@ -117,8 +136,9 @@ const ReportForm = ({ onSubmitReport }) => {
       <h1>Formulir Laporan</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
-          <Form.Label>Nama Pelapor</Form.Label>
+          <Form.Label htmlFor="reportName">Nama Pelapor</Form.Label>
           <Form.Control
+            id="reportName"
             type="text"
             placeholder="Masukkan nama"
             name="name"
@@ -128,8 +148,9 @@ const ReportForm = ({ onSubmitReport }) => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Deskripsi Laporan</Form.Label>
+          <Form.Label htmlFor="reportDescription">Deskripsi Laporan</Form.Label>
           <Form.Control
+            id="reportDescription"
             type="text"
             placeholder="Masukkan deskripsi"
             name="description"
@@ -139,8 +160,9 @@ const ReportForm = ({ onSubmitReport }) => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Lokasi Terkini</Form.Label>
+          <Form.Label htmlFor="reportLocation">Lokasi Terkini</Form.Label>
           <Form.Control
+            id="reportLocation"
             type="text"
             placeholder="Lokasi"
             name="location"
@@ -149,10 +171,13 @@ const ReportForm = ({ onSubmitReport }) => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Unggah Foto</Form.Label>
+          <Form.Label htmlFor="reportPhoto">Unggah Foto</Form.Label>
           <Form.Control
+            id="reportPhoto"
             type="file"
-            onChange={(e) => setReport({ ...report, photo: e.target.files[0] })}
+            onChange={(e) =>
+              setReport({ ...report, photo: e.target.files[0] })
+            }
           />
           <Button variant="primary" className="mt-2" onClick={openCamera}>
             Gunakan Kamera
@@ -160,20 +185,15 @@ const ReportForm = ({ onSubmitReport }) => {
         </Form.Group>
         {isCameraOpen && (
           <div className="camera-container mt-3">
-            <video
-              id="cameraFeed"
-              autoPlay
-              playsInline
-              ref={(video) => {
-                if (video && cameraStream) {
-                  video.srcObject = cameraStream;
-                }
-              }}
-            />
+            <video id="cameraFeed" ref={videoRef} autoPlay playsInline />
             <Button variant="success" className="mt-2" onClick={captureImage}>
               Ambil Foto
             </Button>
-            <Button variant="secondary" className="mt-2 ms-2" onClick={toggleCameraMode}>
+            <Button
+              variant="secondary"
+              className="mt-2 ms-2"
+              onClick={toggleCameraMode}
+            >
               Ubah Kamera
             </Button>
             <Button variant="danger" className="mt-2 ms-2" onClick={closeCamera}>
