@@ -21,7 +21,7 @@ const DashboardPegawai = () => {
               {/* Menambahkan fallback URL jika gambar tidak ditemukan */}
               <Card.Img 
                 variant="top" 
-                src={report.photo ? `https://pkm-geo.vercel.app/${report.photo}` : "https://via.placeholder.com/150"} 
+                src={report.photo || "https://via.placeholder.com/150"}
                 alt="Report"
               />
               <Card.Body>
