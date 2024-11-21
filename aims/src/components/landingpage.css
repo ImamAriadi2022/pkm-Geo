@@ -6,3 +6,46 @@
     -2px  2px 0 #000,
      2px  2px 0 #000;
 }
+
+
+/* landingpage.css */
+
+.text-background {
+  background-color: rgba(0, 0, 0, 0.6); /* Transparan hitam */
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.text-stroke {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.card {
+  margin-bottom: 20px; /* Spasi antar elemen */
+}
+
+img {
+  max-height: 300px;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .display-3 {
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  img {
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-title {
+    font-size: 1.2rem;
+  }
+
+  .card-text {
+    font-size: 0.9rem;
+  }
+}

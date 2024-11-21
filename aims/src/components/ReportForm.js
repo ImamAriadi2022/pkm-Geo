@@ -76,13 +76,11 @@ const ReportForm = ({ onSubmitReport }) => {
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
   
-    // Tentukan skala untuk membatasi ukuran file
-    const maxWidth = 800; // Atur resolusi maksimum
+    const maxWidth = 800;
     const maxHeight = 800;
     let width = video.videoWidth;
     let height = video.videoHeight;
   
-    // Skalakan dimensi jika melebihi batas
     if (width > maxWidth || height > maxHeight) {
       const aspectRatio = width / height;
       if (width > height) {
@@ -99,12 +97,10 @@ const ReportForm = ({ onSubmitReport }) => {
     const context = canvas.getContext("2d");
     context.drawImage(video, 0, 0, width, height);
   
-    // Konversi ke JPEG dan cek ukuran
-    let base64Image = canvas.toDataURL("image/jpeg", 0.7); // Atur kualitas JPEG
+    let base64Image = canvas.toDataURL("image/jpeg", 0.7);
   
-    // Ulangi proses dengan kualitas lebih rendah jika ukuran melebihi 200KB
     while (base64Image.length > 200 * 1024) {
-      base64Image = canvas.toDataURL("image/jpeg", 0.5); // Turunkan kualitas
+      base64Image = canvas.toDataURL("image/jpeg", 0.5);
     }
   
     console.log("Captured base64 image:", base64Image);
@@ -138,16 +134,51 @@ const ReportForm = ({ onSubmitReport }) => {
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      console.log("Uploaded base64 image:", reader.result);
-      setReport((prevReport) => ({
-        ...prevReport,
-        photo: reader.result,
-      }));
-    };
+
     if (file) {
-      console.log("File selected:", file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const image = new Image();
+        image.src = reader.result;
+        image.onload = () => {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+
+          const maxWidth = 800;
+          const maxHeight = 800;
+          let { width, height } = image;
+
+          if (width > maxWidth || height > maxHeight) {
+            const aspectRatio = width / height;
+            if (width > height) {
+              width = maxWidth;
+              height = maxWidth / aspectRatio;
+            } else {
+              height = maxHeight;
+              width = maxHeight * aspectRatio;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          context.drawImage(image, 0, 0, width, height);
+
+          let compressedImage = canvas.toDataURL("image/jpeg", 0.7);
+
+          let quality = 0.7;
+          while (compressedImage.length > 100 * 1024 && quality > 0.1) {
+            quality -= 0.1;
+            compressedImage = canvas.toDataURL("image/jpeg", quality);
+          }
+
+          console.log("Compressed image size:", compressedImage.length / 1024, "KB");
+
+          setReport((prevReport) => ({
+            ...prevReport,
+            photo: compressedImage,
+          }));
+        };
+      };
       reader.readAsDataURL(file);
     } else {
       console.log("No file selected.");
