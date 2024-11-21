@@ -16,7 +16,6 @@ const ReportForm = ({ onSubmitReport }) => {
 
   const videoRef = useRef(null);
 
-  // Fetch geolocation and timestamp on load
   useEffect(() => {
     const getLocation = () => {
       if (navigator.geolocation) {
@@ -52,7 +51,6 @@ const ReportForm = ({ onSubmitReport }) => {
     }));
   }, []);
 
-  // Handle camera opening
   const openCamera = async () => {
     try {
       if (cameraStream) {
@@ -74,7 +72,6 @@ const ReportForm = ({ onSubmitReport }) => {
     }
   };
 
-  // Capture image from video feed
   const captureImage = () => {
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
@@ -84,7 +81,7 @@ const ReportForm = ({ onSubmitReport }) => {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     const base64Image = canvas.toDataURL("image/jpeg");
-    console.log("Captured base64 image from camera:", base64Image); // Log base64 image
+    console.log("Captured base64 image:", base64Image); // Log base64 image
     setReport((prevReport) => ({
       ...prevReport,
       photo: base64Image,
@@ -97,7 +94,6 @@ const ReportForm = ({ onSubmitReport }) => {
     setCameraStream(null);
   };
 
-  // Toggle camera mode (front/back)
   const toggleCameraMode = async () => {
     setCameraMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
     if (isCameraOpen) {
@@ -105,7 +101,6 @@ const ReportForm = ({ onSubmitReport }) => {
     }
   };
 
-  // Close camera
   const closeCamera = () => {
     setIsCameraOpen(false);
     if (cameraStream) {
@@ -114,26 +109,24 @@ const ReportForm = ({ onSubmitReport }) => {
     }
   };
 
-  // Handle file upload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.onloadend = () => {
-      console.log("Base64 image from file upload:", reader.result); // Log base64 image
+      console.log("Uploaded base64 image:", reader.result);
       setReport((prevReport) => ({
         ...prevReport,
-        photo: reader.result, // Menyimpan base64 image
+        photo: reader.result,
       }));
     };
     if (file) {
-      console.log("File selected:", file); // Log file info
+      console.log("File selected:", file);
       reader.readAsDataURL(file);
     } else {
       console.log("No file selected.");
     }
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -142,15 +135,13 @@ const ReportForm = ({ onSubmitReport }) => {
       return;
     }
 
-    // Log the report data before saving
     console.log("Report data before saving:", report);
 
-    // Save report to localStorage
     const pendingReports = JSON.parse(localStorage.getItem("pendingReports")) || [];
     pendingReports.push(report);
     localStorage.setItem("pendingReports", JSON.stringify(pendingReports));
 
-    console.log("Saved reports to localStorage:", pendingReports); // Log data saved in localStorage
+    console.log("Saved reports to localStorage:", pendingReports);
 
     alert("Laporan berhasil disimpan!");
     if (onSubmitReport) {
@@ -168,7 +159,6 @@ const ReportForm = ({ onSubmitReport }) => {
             id="reportName"
             type="text"
             placeholder="Masukkan nama"
-            name="name"
             value={report.name}
             onChange={(e) => setReport({ ...report, name: e.target.value })}
             required
@@ -180,7 +170,6 @@ const ReportForm = ({ onSubmitReport }) => {
             id="reportDescription"
             type="text"
             placeholder="Masukkan deskripsi"
-            name="description"
             value={report.description}
             onChange={(e) => setReport({ ...report, description: e.target.value })}
             required
@@ -191,8 +180,6 @@ const ReportForm = ({ onSubmitReport }) => {
           <Form.Control
             id="reportLocation"
             type="text"
-            placeholder="Lokasi"
-            name="location"
             value={report.location}
             readOnly
           />
