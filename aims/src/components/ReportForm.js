@@ -115,7 +115,6 @@ const ReportForm = ({ onSubmitReport }) => {
     }
     setCameraStream(null);
   };
-  
 
   const toggleCameraMode = async () => {
     setCameraMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
@@ -177,6 +176,8 @@ const ReportForm = ({ onSubmitReport }) => {
             ...prevReport,
             photo: compressedImage,
           }));
+
+          alert("File berhasil dikompres!");
         };
       };
       reader.readAsDataURL(file);
@@ -212,54 +213,59 @@ const ReportForm = ({ onSubmitReport }) => {
       <h1>Formulir Laporan</h1>
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
-          <Form.Label htmlFor="reportName">Nama Pelapor</Form.Label>
+          <Form.Label>Nama Pelapor</Form.Label>
           <Form.Control
-            id="reportName"
             type="text"
             placeholder="Masukkan nama"
+            name="name"
             value={report.name}
             onChange={(e) => setReport({ ...report, name: e.target.value })}
             required
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label htmlFor="reportDescription">Deskripsi Laporan</Form.Label>
+          <Form.Label>Deskripsi Laporan</Form.Label>
           <Form.Control
-            id="reportDescription"
             type="text"
             placeholder="Masukkan deskripsi"
+            name="description"
             value={report.description}
             onChange={(e) => setReport({ ...report, description: e.target.value })}
             required
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label htmlFor="reportLocation">Lokasi Terkini</Form.Label>
+          <Form.Label>Lokasi Terkini</Form.Label>
           <Form.Control
-            id="reportLocation"
             type="text"
+            placeholder="Lokasi"
+            name="location"
             value={report.location}
             readOnly
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label htmlFor="reportPhoto">Unggah Foto</Form.Label>
-          <Form.Control id="reportPhoto" type="file" onChange={handleFileUpload} />
+          <Form.Label>Unggah Foto</Form.Label>
+          <Form.Control
+            type="file"
+            onChange={handleFileUpload}
+          />
           <Button variant="primary" className="mt-2" onClick={openCamera}>
             Gunakan Kamera
           </Button>
         </Form.Group>
         {isCameraOpen && (
           <div className="camera-container mt-3">
-            <video id="cameraFeed" ref={videoRef} autoPlay playsInline />
+            <video
+              id="cameraFeed"
+              autoPlay
+              playsInline
+              ref={videoRef}
+            />
             <Button variant="success" className="mt-2" onClick={captureImage}>
               Ambil Foto
             </Button>
-            <Button
-              variant="secondary"
-              className="mt-2 ms-2"
-              onClick={toggleCameraMode}
-            >
+            <Button variant="secondary" className="mt-2 ms-2" onClick={toggleCameraMode}>
               Ubah Kamera
             </Button>
             <Button variant="danger" className="mt-2 ms-2" onClick={closeCamera}>
