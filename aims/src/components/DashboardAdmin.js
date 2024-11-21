@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Button, Modal } from "react-bootstrap";
+import { Container, Card, Button, Modal, Row, Col } from "react-bootstrap";
 import AnalyzeReport from "./AnalyzeReport";
 
 const DashboardAdmin = () => {
@@ -14,7 +14,7 @@ const DashboardAdmin = () => {
     setPendingReports(reports);
   }, []);
 
-  const handleApprove = (report) => {
+  const handleApprove = async (report) => {
     // Tambahkan hasil analisis ke laporan
     const analyzedReport = { ...report, analysis: analysisResult };
 
@@ -28,7 +28,35 @@ const DashboardAdmin = () => {
     setPendingReports(updatedReports);
     localStorage.setItem('pendingReports', JSON.stringify(updatedReports));
 
-    alert('Laporan berhasil disetujui!');
+    // Upload laporan ke API
+    const formData = new FormData();
+    formData.append('name', analyzedReport.name);
+    formData.append('description', analyzedReport.description);
+    formData.append('location', analyzedReport.location);
+    formData.append('timestamp', analyzedReport.timestamp);
+    formData.append('analysis', analyzedReport.analysis);
+    if (analyzedReport.photo) {
+      formData.append('photo', analyzedReport.photo);
+    }
+
+    try {
+      const response = await fetch('https://back-fix-laps.vercel.app/api/aims-upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('Upload successful:', data);
+      alert('Laporan berhasil diunggah ke API!');
+    } catch (error) {
+      console.error('Error uploading report:', error);
+      alert('Terjadi kesalahan saat mengunggah laporan ke API.');
+    }
+
     setShowModal(false);
     setSelectedReport(null);
   };
@@ -58,24 +86,22 @@ const DashboardAdmin = () => {
   return (
     <Container className="mt-5">
       <h1>Admin Dashboard</h1>
-      <Table striped bordered hover className="mt-4">
-        <thead>
-          <tr>
-            <th>Nama</th>
-            <th>Deskripsi</th>
-            <th>Lokasi</th>
-            <th>Timestamp</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pendingReports.map((report, index) => (
-            <tr key={index}>
-              <td>{report.name}</td>
-              <td>{report.description}</td>
-              <td>{report.location}</td>
-              <td>{report.timestamp}</td>
-              <td>
+      <Row>
+        {pendingReports.map((report, index) => (
+          <Col md={4} key={index} className="mb-4">
+            <Card>
+              <Card.Img variant="top" src={`http://localhost:3001${report.photo}`} alt="Report" />
+              <Card.Body>
+                <Card.Title>{report.name}</Card.Title>
+                <Card.Text>
+                  <strong>Deskripsi:</strong> {report.description}
+                </Card.Text>
+                <Card.Text>
+                  <strong>Lokasi:</strong> {report.location}
+                </Card.Text>
+                <Card.Text>
+                  <strong>Timestamp:</strong> {report.timestamp}
+                </Card.Text>
                 <Button variant="info" onClick={() => handleAnalyze(report)}>
                   Analyze
                 </Button>
@@ -85,11 +111,11 @@ const DashboardAdmin = () => {
                 <Button variant="danger" className="ms-2" onClick={() => handleReject(report)}>
                   Reject
                 </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>

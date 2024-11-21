@@ -4,6 +4,8 @@ import backgroundImage from "../assets/background.jpg"; // Ganti dengan path gam
 import aimsImage from "../assets/aims.jpg"; // Ganti dengan path gambar yang sesuai
 import aiImage from "../assets/ai.jpg"; // Ganti dengan path gambar yang sesuai
 import placeholderImage from "../assets/placeholder.jpg"; // Gambar placeholder
+import "./landingpage.css";
+import Footer from "./Footer";
 
 const LandingPage = () => {
   const handleImageError = (e) => {
@@ -25,7 +27,7 @@ const LandingPage = () => {
             alignItems: "center",
           }}
         >
-          <h1 className="display-3">Welcome to the AIMS System</h1>
+          <h1 className="display-3 text-background text-stroke">Selamat datang di website Cakep.id</h1>
         </div>
       </Container>
 
@@ -81,16 +83,8 @@ const LandingPage = () => {
           </Col>
         </Row>
 
-        <Row className="text-center mt-5">
-          <Col>
-            <h2 id="learn-more">Learn More</h2>
-            <p>
-              Untuk informasi lebih lanjut tentang bagaimana sistem AIMS dapat membantu perusahaan Anda, silakan hubungi kami atau kunjungi halaman dokumentasi kami.
-            </p>
-            <Button variant="primary" href="/contact">Contact Us</Button>
-          </Col>
-        </Row>
       </Container>
+      <Footer />
     </>
   );
 };
